@@ -101,6 +101,18 @@ version (linux)
         RUSAGE_CHILDREN = -1,
     }
 
+    struct rlimit
+    {
+        rlim_t rlim_cur;
+        rlim_t rlim_max;
+    }
+
+    struct rusage
+    {
+        timeval ru_utime;
+        timeval ru_stime;
+    }
+
     enum
     {
         RLIMIT_CORE   = 4,
@@ -111,32 +123,81 @@ version (linux)
         RLIMIT_STACK  = 3,
         RLIMIT_AS     = 9,
     }
+
+    int getpriority(int, id_t);
+    int getrlimit(int, rlimit*);
+    int getrusage(int, rusage*);
+    int setpriority(int, id_t, int);
+    int setrlimit(int, const rlimit*);
 }
 else version (OSX)
 {
 }
 else version (FreeBSD)
 {
+    enum
+    {
+        PRIO_PROCESS = 0,
+        PRIO_PGRP    = 1,
+        PRIO_USER    = 2,
+    }
+
+    alias long rlim_t;
+
+    enum RLIM_INFINITY = cast(rlim_t)((cast(ulong)1 << 63) - 1);
+    // enum RLIM_SAVED_MAX missing
+    // enum RLIM_SAVED_CUR missing
+
+    enum
+    {
+        RUSAGE_SELF     =  0,
+        RUSAGE_CHILDREN = -1,
+    }
+
+    struct rlimit
+    {
+        rlim_t rlim_cur;
+        rlim_t rlim_max;
+    }
+
+    struct rusage
+    {
+        timval ru_utime;
+        timval ru_stime;
+        c_long ru_maxrss;
+        c_long ru_ixrss;
+        c_long ru_idrss;
+        c_long ru_isrss;
+        c_long ru_minflt;
+        c_long ru_majflt;
+        c_long ru_nswap;
+        c_long ru_inblock;
+        c_long ru_oublock;
+        c_long ru_msgsnd;
+        c_long ru_msgrcv;
+        c_long ru_nsignals;
+        c_long ru_nvcsw;
+        c_long ru_nivcsw;
+    }
+
+    enum
+    {
+        RLIMIT_CORE = 4,
+        RLIMIT_CPU = 0,
+        RLIMIT_DATA = 2,
+        RLIMIT_FSIZE = 1,
+        RLIMIT_NOFILE = 8,
+        RLIMIT_STACK = 3,
+        RLIMIT_AS = 10,
+    }
+
+    int getpriority(int, int);
+    int getrlimit(int, rlimit*);
+    int getrusage(int, rusage*);
+    int setpriority(int, int, int);
+    int setrlimit(int, const rlimit*);
 }
 else version (Solaris)
 {
 }
 else static assert (false, "Unsupported platform");
-
-struct rlimit
-{
-    rlim_t rlim_cur;
-    rlim_t rlim_max;
-}
-
-struct rusage
-{
-    timeval ru_utime;
-    timeval ru_stime;
-}
-
-int getpriority(int, id_t);
-int getrlimit(int, rlimit*);
-int getrusage(int, rusage*);
-int setpriority(int, id_t, int);
-int setrlimit(int, const rlimit*);
